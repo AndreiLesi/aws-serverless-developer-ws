@@ -118,7 +118,7 @@ resource "aws_schemas_registry_policy" "contracts_event_policy" {
 
 # Schema: Contract Status Changed 
 resource "aws_schemas_schema" "contracts_contract_status_changed" {
-  name          = "ContractStatusChanged"
+  name          = "unicorn.contracts@ContractStatusChanged"
   registry_name = aws_schemas_registry.contracts_event.name
   type          = "OpenApi3"
   content = jsonencode({
