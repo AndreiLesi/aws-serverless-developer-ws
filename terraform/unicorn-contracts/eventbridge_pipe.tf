@@ -1,5 +1,5 @@
 resource "aws_pipes_pipe" "this" {
-  name          = "${local.project}-ContractsPipe"
+  name          = "${var.project}-ContractsPipe"
   role_arn      = module.iam_role_EventBridgePipe.iam_role_arn
   desired_state = "RUNNING"
 

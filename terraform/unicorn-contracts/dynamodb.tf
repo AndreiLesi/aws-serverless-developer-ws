@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "contracts" {
-  name             = "${local.project}-Contracts"
+  name             = "${var.project}-Contracts"
   hash_key         = "property_id"
   billing_mode     = "PAY_PER_REQUEST"
   stream_enabled   = true

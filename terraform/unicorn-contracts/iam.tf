@@ -9,7 +9,7 @@ module "iam_role_ContractsTableStreamToEventPipe" {
     }
   ]
   create_role       = true
-  role_name         = "${local.project}-ContractsStreamToEventPipe"
+  role_name         = "${var.project}-ContractsStreamToEventPipe"
   role_requires_mfa = false
   inline_policy_statements = [
     {
@@ -51,7 +51,7 @@ module "iam_role_ApiGatewayAccountConfigRole" {
   source                  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
   trusted_role_services   = ["apigateway.amazonaws.com"]
   create_role             = true
-  role_name               = "${local.project}-ApiGatewayAccountConfigRole"
+  role_name               = "${var.project}-ApiGatewayAccountConfigRole"
   role_requires_mfa       = false
   custom_role_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"]
 }
@@ -61,7 +61,7 @@ module "iam_role_UnicornContractsApiIntegrationRole" {
   source                = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
   trusted_role_services = ["apigateway.amazonaws.com"]
   create_role           = true
-  role_name             = "${local.project}-UnicornContractsApiIntegrationRole"
+  role_name             = "${var.project}-UnicornContractsApiIntegrationRole"
   role_requires_mfa     = false
   inline_policy_statements = [
     {
@@ -80,7 +80,7 @@ module "iam_role_EventBridgePipe" {
   source                = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
   trusted_role_services = ["pipes.amazonaws.com"]
   create_role           = true
-  role_name             = "${local.project}-EventBridgePipe-Contracts-Role"
+  role_name             = "${var.project}-EventBridgePipe-Contracts-Role"
   role_requires_mfa     = false
   inline_policy_statements = [
     {

@@ -188,6 +188,10 @@ resource "aws_api_gateway_integration_response" "contracts_post" {
   resource_id = aws_api_gateway_resource.contracts.id
   http_method = aws_api_gateway_method.contracts_post.http_method
   status_code = aws_api_gateway_method_response.contracts_post.status_code
+  depends_on = [
+    aws_api_gateway_integration.contracts_put,
+    aws_api_gateway_method.contracts_put
+  ]
 
   response_templates = {
     "application/json" = jsonencode({
@@ -201,7 +205,10 @@ resource "aws_api_gateway_integration_response" "contracts_put" {
   resource_id = aws_api_gateway_resource.contracts.id
   http_method = aws_api_gateway_method.contracts_put.http_method
   status_code = aws_api_gateway_method_response.contracts_put.status_code
-
+  depends_on = [
+    aws_api_gateway_integration.contracts_put,
+    aws_api_gateway_method.contracts_put
+    ]
   response_templates = {
     "application/json" = jsonencode({
       message = "OK"
@@ -214,6 +221,10 @@ resource "aws_api_gateway_integration_response" "contracts_options" {
   resource_id = aws_api_gateway_resource.contracts.id
   http_method = aws_api_gateway_method.contracts_options.http_method
   status_code = aws_api_gateway_method_response.contracts_options.status_code
+  depends_on = [
+    aws_api_gateway_integration.contracts_put,
+    aws_api_gateway_method.contracts_put
+    ]
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"

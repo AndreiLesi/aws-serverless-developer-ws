@@ -1,7 +1,7 @@
 module "lambda_image_upload" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name                     = "${local.project}-ImageUpload"
+  function_name                     = "${var.project}-ImageUpload"
   source_path                       = "../src/image/upload_image.py"
   description                       = "My awesome lambda function"
   handler                           = "upload_image.lambda_handler"
@@ -36,7 +36,7 @@ module "lambda_image_upload" {
 module "lambda_contract_event_handler" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name                     = "${local.project}-Contract-EventHandler"
+  function_name                     = "${var.project}-Contract-EventHandler"
   source_path                       = "../src/contracts_service/"
   description                       = "My awesome lambda function"
   handler                           = "contract_event_handler.lambda_handler"

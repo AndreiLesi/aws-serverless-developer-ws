@@ -1,7 +1,7 @@
 module "sqs_contracts_ingest" {
   source = "terraform-aws-modules/sqs/aws"
 
-  name                       = "${local.project}-ContractsIngestQueue"
+  name                       = "${var.project}-ContractsIngestQueue"
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 20
   create_dlq                 = true
@@ -13,7 +13,7 @@ module "sqs_contracts_ingest" {
     namespace = aws_ssm_parameter.ContractsNamespace.value
   }
 
-  dlq_name = "${local.project}-ContractsIngestQueueDLQ"
+  dlq_name = "${var.project}-ContractsIngestQueueDLQ"
   dlq_tags = {
     namespace = aws_ssm_parameter.ContractsNamespace.value
   }
@@ -24,7 +24,7 @@ module "sqs_contracts_ingest" {
 ###########################################
 module "sqs_ContractsTableStreamToEventPipeDLQ" {
   source                    = "terraform-aws-modules/sqs/aws"
-  name                      = "${local.project}-ContractsTableStreamToEventPipeDLQ"
+  name                      = "${var.project}-ContractsTableStreamToEventPipeDLQ"
   message_retention_seconds = 1209600
 
   tags = {
