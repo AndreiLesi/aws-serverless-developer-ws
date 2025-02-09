@@ -11,7 +11,7 @@ module "lambda_image_upload" {
   memory_size                       = 128
 
   environment_variables = {
-    DESTINATION_BUCKET = aws_s3_bucket.images.bucket
+    DESTINATION_BUCKET = data.aws_s3_bucket.images.bucket
   }
 
   attach_policy_statements = true
@@ -26,8 +26,8 @@ module "lambda_image_upload" {
         "s3:DeleteBucket"
       ]
       resources = [
-        "${aws_s3_bucket.images.arn}",
-        "${aws_s3_bucket.images.arn}/*",
+        "${data.aws_s3_bucket.images.arn}",
+        "${data.aws_s3_bucket.images.arn}/*",
       ]
     }
   }
@@ -99,10 +99,10 @@ module "lambda_contract_event_handler" {
 
   environment_variables = {
     DYNAMODB_TABLE               = aws_dynamodb_table.contracts.name
-    SERVICE_NAMESPACE            = aws_ssm_parameter.ContractsNamespace.value
+    SERVICE_NAMESPACE            = data.aws_ssm_parameter.ContractsNamespace.value
     LOG_LEVEL                    = "INFO"
-    POWERTOOLS_SERVICE_NAME      = aws_ssm_parameter.ContractsNamespace.value
+    POWERTOOLS_SERVICE_NAME      = data.aws_ssm_parameter.ContractsNamespace.value
     POWERTOOLS_LOGGER_LOG_EVENT  = "true"
-    POWERTOOLS_METRICS_NAMESPACE = aws_ssm_parameter.ContractsNamespace.value
+    POWERTOOLS_METRICS_NAMESPACE = data.aws_ssm_parameter.ContractsNamespace.value
   }
 }

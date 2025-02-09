@@ -10,12 +10,12 @@ module "sqs_contracts_ingest" {
   }
 
   tags = {
-    namespace = aws_ssm_parameter.ContractsNamespace.value
+    namespace = data.aws_ssm_parameter.ContractsNamespace.value
   }
 
   dlq_name = "${var.project}-ContractsIngestQueueDLQ"
   dlq_tags = {
-    namespace = aws_ssm_parameter.ContractsNamespace.value
+    namespace = data.aws_ssm_parameter.ContractsNamespace.value
   }
 }
 
@@ -28,7 +28,7 @@ module "sqs_ContractsTableStreamToEventPipeDLQ" {
   message_retention_seconds = 1209600
 
   tags = {
-    namespace = aws_ssm_parameter.ContractsNamespace.value
+    namespace = data.aws_ssm_parameter.ContractsNamespace.value
   }
 
 }

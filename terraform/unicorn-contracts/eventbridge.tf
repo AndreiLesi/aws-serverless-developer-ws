@@ -9,9 +9,9 @@ module "eventbridge_contracts_bus" {
       event_pattern = jsonencode({
         "account" : [data.aws_caller_identity.current.account_id]
         "source" : [
-          aws_ssm_parameter.ContractsNamespace.value,
-          aws_ssm_parameter.PropertiesNamespace.value,
-          aws_ssm_parameter.WebNamespace.value,
+          data.aws_ssm_parameter.ContractsNamespace.value,
+          data.aws_ssm_parameter.PropertiesNamespace.value,
+          data.aws_ssm_parameter.WebNamespace.value,
         ]
       })
       enabled = true
@@ -49,7 +49,7 @@ resource "aws_cloudwatch_event_bus_policy" "contract_events_publish_policy" {
         Resource = module.eventbridge_contracts_bus.eventbridge_bus_arn
         Condition = {
           StringEquals = {
-            "events:source" = [aws_ssm_parameter.ContractsNamespace.value]
+            "events:source" = [data.aws_ssm_parameter.ContractsNamespace.value]
           }
         }
       },
@@ -71,7 +71,7 @@ resource "aws_cloudwatch_event_bus_policy" "contract_events_publish_policy" {
         Resource = module.eventbridge_contracts_bus.eventbridge_bus_arn
         Condition = {
           StringEquals = {
-            "events:source" = [aws_ssm_parameter.ContractsNamespace.value]
+            "events:source" = [data.aws_ssm_parameter.ContractsNamespace.value]
           },
           StringEqualsIfExists = {
             "events:creatorAccount" = data.aws_caller_identity.current.account_id
@@ -87,7 +87,7 @@ resource "aws_cloudwatch_event_bus_policy" "contract_events_publish_policy" {
 
 ### Create Event Registry for Unicorn Contracts
 resource "aws_schemas_registry" "contracts_event" {
-  name = aws_ssm_parameter.ContractsNamespace.value
+  name = data.aws_ssm_parameter.ContractsNamespace.value
 }
 
 resource "aws_schemas_registry_policy" "contracts_event_policy" {

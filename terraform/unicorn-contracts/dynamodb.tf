@@ -10,6 +10,6 @@ resource "aws_dynamodb_table" "contracts" {
   }
   tags = {
     stage     = "Prod"
-    namespace = aws_ssm_parameter.ContractsNamespace.value
+    namespace = data.aws_ssm_parameter.ContractsNamespace.value
   }
 }
