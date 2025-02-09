@@ -9,9 +9,22 @@ resource "aws_api_gateway_rest_api" "unicorn_contracts_api" {
 
 resource "aws_api_gateway_deployment" "this" {
   rest_api_id = aws_api_gateway_rest_api.unicorn_contracts_api.id
-
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.unicorn_contracts_api.body))
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_rest_api.unicorn_contracts_api.id,
+      aws_api_gateway_method.contracts_post.id,
+      aws_api_gateway_method.contracts_put.id,
+      aws_api_gateway_method.contracts_options.id,
+      aws_api_gateway_integration.contracts_post.id,
+      aws_api_gateway_integration.contracts_put.id,
+      aws_api_gateway_integration.contracts_options.id,
+      aws_api_gateway_integration_response.contracts_post.id,
+      aws_api_gateway_integration_response.contracts_put.id,
+      aws_api_gateway_integration_response.contracts_options.id,
+      aws_api_gateway_method_response.contracts_post.id,
+      aws_api_gateway_method_response.contracts_put.id,
+      aws_api_gateway_method_response.contracts_options.id
+    ]))
   }
 
   lifecycle {
