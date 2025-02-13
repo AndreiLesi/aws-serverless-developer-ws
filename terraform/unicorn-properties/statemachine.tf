@@ -9,17 +9,197 @@ module "sfn_properties_approval_state_machine" {
   definition = <<EOF
 {
   "Comment": "A Hello World example of the Amazon States Language using Pass states",
-  "StartAt": "Hello",
+  "StartAt": "VerifyContractExists",
   "States": {
-    "Hello": {
-      "Type": "Pass",
-      "Result": "Hello",
-      "Next": "World"
+    "VerifyContractExists": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${module.lambda_properties_contract_exist_check.lambda_function_arn}",
+        "Payload": {
+          "Input.$": "$"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "InputPath": "$.detail",
+      "ResultPath": "$.contract_exists_check",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "ContractStatusNotFoundException"
+          ],
+          "Next": "Fail"
+        }
+      ],
+      "Next": "CheckImageIntegrity"
     },
-    "World": {
-      "Type": "Pass",
-      "Result": "World",
-      "End": true
+    "CheckImageIntegrity": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "DetectModerationLabels",
+        "States": {
+          "DetectModerationLabels": {
+            "Type": "Task",
+            "Parameters": {
+              "Image": {
+                "S3Object": {
+                  "Bucket": "${lower(var.project)}-images-bucket",
+                  "Name.$": "$.ImageName"
+                }
+              }
+            },
+            "Resource": "arn:aws:states:::aws-sdk:rekognition:detectModerationLabels",
+            "End": true
+          }
+        }
+      },
+      "Next": "CheckDescriptionSentiment",
+      "ItemsPath": "$.detail.images",
+      "ItemSelector": {
+        "ImageName.$": "$$.Map.Item.Value"
+      },
+      "ResultPath": "$.imageModerations"
+    },
+    "CheckDescriptionSentiment": {
+      "Type": "Task",
+      "Parameters": {
+        "LanguageCode": "en",
+        "Text.$": "$.detail.description"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:comprehend:detectSentiment",
+      "Next": "ValidateContentIntegrity",
+      "ResultPath": "$.contentSentiment"
+    },
+    "ValidateContentIntegrity": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "${module.lambda_properties_contract_integrity_validator.lambda_function_arn}"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Next": "IsContentSafe",
+      "ResultSelector": {
+        "validation_result.$": "$.Payload.validation_result"
+      },
+      "ResultPath": "$.validation_check"
+    },
+    "IsContentSafe": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.validation_check.validation_result",
+          "StringEquals": "FAIL",
+          "Next": "PublishPropertyPublicationRejected"
+        },
+        {
+          "Variable": "$.validation_check.validation_result",
+          "StringEquals": "PASS",
+          "Next": "WaitForContractApproval"
+        }
+      ]
+    },
+    "PublishPropertyPublicationRejected": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::events:putEvents",
+      "Parameters": {
+        "Entries": [
+          {
+            "Detail": {
+              "property_id.$": "$.detail.property_id",
+              "evaluation_result": "DECLINED"
+            },
+            "DetailType": "PublicationEvaluationCompleted",
+            "EventBusName": "${module.eventbridge_properties_bus.eventbridge_bus_name}",
+            "Source": "${data.aws_ssm_parameter.PropertiesNamespace.value}"
+          }
+        ]
+      },
+      "Next": "Declined"
+    },
+    "WaitForContractApproval": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${module.lambda_properties_wait_for_contract_approval.lambda_function_arn}",
+        "Payload": {
+          "Input.$": "$",
+          "TaskToken.$": "$$.Task.Token"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "InputPath": "$.detail",
+      "ResultPath": "$.status_check",
+      "Next": "PublishPropertyPublicationApproved"
+    },
+    "PublishPropertyPublicationApproved": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::events:putEvents",
+      "Parameters": {
+        "Entries": [
+          {
+            "Detail": {
+              "property_id.$": "$.detail.property_id",
+              "evaluation_result": "APPROVED"
+            },
+            "DetailType": "PublicationEvaluationCompleted",
+            "EventBusName": "${module.eventbridge_properties_bus.eventbridge_bus_name}",
+            "Source": "${data.aws_ssm_parameter.PropertiesNamespace.value}"
+          }
+        ]
+      },
+      "Next": "Success"
+    },
+    "Declined": {
+      "Type": "Succeed"
+    },
+    "Success": {
+      "Type": "Succeed"
+    },
+    "Fail": {
+      "Type": "Fail"
     }
   }
 }
@@ -73,10 +253,14 @@ EOF
     comprehend = {
         effect = "Allow",
         actions = [
-            "comprehend:DetectEntities",
-            "comprehend:DetectKeyPhrases",
-            "comprehend:DetectDominantLanguage",
-            "comprehend:DetectSentiment"
+          "comprehend:BatchDetectKeyPhrases",
+          "comprehend:DetectDominantLanguage",
+          "comprehend:DetectEntities",
+          "comprehend:BatchDetectEntities",
+          "comprehend:DetectKeyPhrases",
+          "comprehend:DetectSentiment",
+          "comprehend:BatchDetectDominantLanguage",
+          "comprehend:BatchDetectSentiment"
         ],
         resources = ["*"]
     },
@@ -85,7 +269,8 @@ EOF
         actions = [
             "rekognition:DetectFaces",
             "rekognition:DetectLabels",
-            "rekognition:DetectText"
+            "rekognition:DetectText",
+            "rekognition:DetectModerationLabels"
         ],
         resources = ["*"]
     },

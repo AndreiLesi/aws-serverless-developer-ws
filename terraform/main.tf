@@ -10,12 +10,12 @@ module "unicorn_contracts" {
   depends_on = [ module.shared_infra ]
 }
 
-# module "unicorn_properties" {
-#   source  = "./unicorn-properties/"
-#   project = local.project
+module "unicorn_properties" {
+  source  = "./unicorn-properties/"
+  project = local.project
 
-#   depends_on = [ 
-#     module.shared_infra,
-#     module.unicorn_contracts
-#   ]
-# }
+  depends_on = [ 
+    module.shared_infra,
+    module.unicorn_contracts
+  ]
+}

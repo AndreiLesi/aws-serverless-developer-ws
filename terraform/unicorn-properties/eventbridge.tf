@@ -15,6 +15,22 @@ module "eventbridge_properties_bus" {
         ]
       })
       enabled = true
+    },
+    "properties.ContractStatusChanged" = {
+      description = "Triggers the Contract Status Changed Event Lambda Fcn"
+      event_pattern = jsonencode({
+        "source" : [data.aws_ssm_parameter.ContractsNamespace.value],
+        "detail-type" : ["ContractStatusChanged"]
+      })
+      enabled = true
+    },
+    "properties.triggerSfn" = {
+      description = "Triggers Step Function when a approval is requested"
+      event_pattern = jsonencode({
+        "source" : [data.aws_ssm_parameter.WebNamespace.value],
+        "detail-type" : ["PublicationApprovalRequested"]
+      })
+      enabled = true
     }
   }
 
@@ -23,11 +39,21 @@ module "eventbridge_properties_bus" {
       {
         name = "UnicornPropertiesCatchAllLogGroupTarget-Prod"
         arn  = aws_cloudwatch_log_group.UnicornPropertiesCatchAllLogGroup.arn
-      },
+      }
+    ],
+    "properties.ContractStatusChanged" = [
       {
         name            = "UnicornPropertiesLambdaFcn-Prod"
         arn             = module.lambda_contract_status_changed_event_handler.lambda_function_arn
         dead_letter_arn = module.sqs_PropertiesEventBusRuleDLQ.queue_arn
+      }
+    ],
+    "properties.triggerSfn" = [
+      {
+        name            = "UnicornProperties-SfnApprovalWF"
+        arn             = module.sfn_properties_approval_state_machine.state_machine_arn
+        attach_role_arn = true
+        dead_letter_arn = module.sqs_PropertiesServiceDLQ.queue_arn
       }
     ]
   }
@@ -35,6 +61,10 @@ module "eventbridge_properties_bus" {
   attach_tracing_policy    = true
   attach_cloudwatch_policy = true
   cloudwatch_target_arns   = [aws_cloudwatch_log_group.UnicornPropertiesCatchAllLogGroup.arn]
+  attach_sfn_policy = true
+  sfn_target_arns = [module.sfn_properties_approval_state_machine.state_machine_arn]
+  attach_lambda_policy = true
+  lambda_target_arns = [module.lambda_contract_status_changed_event_handler.lambda_function_arn]
 }
 
 # Restrict Permissions of Eventbus

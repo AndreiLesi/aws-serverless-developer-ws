@@ -42,7 +42,7 @@ module "lambda_contract_status_changed_event_handler" {
   allowed_triggers = {
     eventbridge = {
       principal  = "events.amazonaws.com"
-      source_arn = module.eventbridge_properties_bus.eventbridge_rule_arns["properties.catchall"]
+      source_arn = module.eventbridge_properties_bus.eventbridge_rule_arns["properties.ContractStatusChanged"]
     }
   }
 
@@ -106,13 +106,13 @@ module "lambda_properties_approval_sync" {
       ]
       resources = [aws_dynamodb_table.properties.stream_arn]
     }
-    # StateMachineTaskSuccess = {
-    #   effect = "Allow"
-    #   actions = [
-    #     "states:SendTaskSuccess",     
-    #   ]
-    #   resources = [aws_dynamodb_table.properties.stream_arn]
-    # }
+    StateMachineTaskSuccess = {
+      effect = "Allow"
+      actions = [
+        "states:SendTaskSuccess",     
+      ]
+      resources = [module.sfn_properties_approval_state_machine.state_machine_arn]
+    }
   }
 
   event_source_mapping = {
