@@ -6,6 +6,7 @@ import json
 
 import boto3
 from boto3.dynamodb.types import TypeDeserializer
+from aws_lambda_powertools import Logger, Tracer
 
 # Initialise Environment variables
 if (SERVICE_NAMESPACE := os.environ.get("SERVICE_NAMESPACE")) is None:
@@ -13,10 +14,14 @@ if (SERVICE_NAMESPACE := os.environ.get("SERVICE_NAMESPACE")) is None:
 if (CONTRACT_STATUS_TABLE := os.environ.get("CONTRACT_STATUS_TABLE")) is None:
     raise InternalServerError("CONTRACT_STATUS_TABLE environment variable is undefined")
 
+logger = Logger()
+tracer = Tracer()
+
 # Initialise boto3 clients
 sfn = boto3.client('stepfunctions')
 
-
+@tracer.capture_method
+@logger.inject_lambda_context(log_event=True)
 def lambda_handler(event, context):
     """Functions processes DynamoDB Stream to detect changes in the contract status
     and syncs AWS Step Function task token based on the existence of contract service and
@@ -52,17 +57,18 @@ def lambda_handler(event, context):
             return
 
         if property_contract_status["contract_status"] != "APPROVED":
-            print({"Contract status for property is not APPROVED":
+            logger.info({"Contract status for property is not APPROVED":
                 property_contract_status["property_id"]})
             return
 
-        print({"Contract status for property is APPROVED":
+        logger.info({"Contract status for property is APPROVED":
             property_contract_status["property_id"]})
 
         result = task_successful(property_contract_status["sfn_wait_approved_task_token"], property_contract_status)
         return result
 
-
+@tracer.capture_method
+@logger.inject_lambda_context(log_event=True)
 def task_successful(task_token: str, contract_status: dict):
     """Send the token for a specified contract status back to Step Functions to continue workflow execution.
 
@@ -75,10 +81,10 @@ def task_successful(task_token: str, contract_status: dict):
         Contract Status object to return to statemachine.
     """
     output = {'Payload': contract_status}
-    print(output)
+    logger.info(output)
     return sfn.send_task_success(taskToken=task_token, output=json.dumps(output))
 
-
+@tracer.capture_method
 def ddb_deserialize(dynamo_image: dict) -> dict:
     """Converts the DynamoDB stream object to json dict
 

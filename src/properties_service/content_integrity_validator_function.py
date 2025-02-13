@@ -2,12 +2,15 @@
 # SPDX-License-Identifier: MIT-0
 
 import os
+from aws_lambda_powertools import  Logger, Metrics, Tracer
 
 # Initialise Environment variables
+tracer = Tracer()
+
 if (SERVICE_NAMESPACE := os.environ.get("SERVICE_NAMESPACE")) is None:
     raise EnvironmentError("SERVICE_NAMESPACE environment variable is undefined")
 
-
+@tracer.capture_method
 def lambda_handler(event, context):
     """Validates the integrity of the property content
 

@@ -5,7 +5,7 @@ import os
 
 import boto3
 from botocore.exceptions import ClientError
-
+from aws_lambda_powertools import Logger, Tracer
 from exceptions import ContractStatusNotFoundException
 
 # Initialise Environment variables
@@ -18,8 +18,11 @@ if (CONTRACT_STATUS_TABLE := os.environ.get("CONTRACT_STATUS_TABLE")) is None:
 # Initialise boto3 clients
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(CONTRACT_STATUS_TABLE)  # type: ignore
+logger = Logger()
+tracer = Tracer()
 
-
+@tracer.capture_method
+@logger.inject_lambda_context(log_event=True)
 def lambda_handler(event, context):
     """Function checks for the existence of a contract status entry for a specified property.
 
@@ -46,10 +49,11 @@ def lambda_handler(event, context):
         return get_contract_status(detail["property_id"])
 
     except ContractStatusNotFoundException:
-        print("Property %s does not exist. Aborting approval process.", detail["property_id"])
+        logger.error("Property %s does not exist. Aborting approval process.", detail["property_id"])
         raise
 
-
+@tracer.capture_method
+@logger.inject_lambda_context(log_event=True)
 def get_contract_status(property_id: str) -> dict:
     """Returns contract status for a specified property
 
@@ -74,7 +78,7 @@ def get_contract_status(property_id: str) -> dict:
 
     except ClientError as error:
         if error.response["Error"]["Code"] == "ResourceNotFoundException":
-            print("Error getting contract.")
+            logger.error("Error getting contract.")
             raise ContractStatusNotFoundException() from error
         raise error
     except KeyError as _:

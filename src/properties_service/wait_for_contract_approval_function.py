@@ -5,9 +5,11 @@ import os
 
 import boto3
 from botocore.exceptions import ClientError
-
+from aws_lambda_powertools import Logger, Tracer
 from exceptions import ContractStatusNotFoundException
 
+logger = Logger()
+tracer = Tracer()
 
 # Initialise Environment variables
 if (SERVICE_NAMESPACE := os.environ.get("SERVICE_NAMESPACE")) is None:
@@ -20,7 +22,8 @@ if (CONTRACT_STATUS_TABLE := os.environ.get("CONTRACT_STATUS_TABLE")) is None:
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(CONTRACT_STATUS_TABLE)  # type: ignore
 
-
+@tracer.capture_method
+@logger.inject_lambda_context(log_event=True)
 def lambda_handler(event, context):
     """Function checks to see whether the contract status exists and waits for APPROVAL
     by updating contract status with task token.
@@ -49,9 +52,11 @@ def lambda_handler(event, context):
             property_id=contract_status["property_id"])
         return detail
     except ContractStatusNotFoundException as error:
-        print("Cannot approve a property that does not exist.")
+        logger.error("Cannot approve a property that does not exist.")
         raise error
-
+    
+@tracer.capture_method
+@logger.inject_lambda_context(log_event=True)
 def get_contract_status(property_id: str) -> dict:
     """Returns contract status for a specified property
 
@@ -76,13 +81,13 @@ def get_contract_status(property_id: str) -> dict:
 
     except ClientError as error:
         if error.response["Error"]["Code"] == "ResourceNotFoundException":
-            print("Error getting contract.")
+            logger.error("Error getting contract.")
             raise ContractStatusNotFoundException() from error
         raise error
     except KeyError as _:
         raise ContractStatusNotFoundException() from _
 
-
+@tracer.capture_method
 def update_token_and_pause_execution(task_token: str, property_id: str):
     """Update the Contract status table with task token for this state.
 
