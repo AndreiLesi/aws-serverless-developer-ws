@@ -35,7 +35,7 @@ module "lambda_contract_status_changed_event_handler" {
         "dynamodb:Query",
         "dynamodb:GetItem"
       ]
-      resources = [aws_dynamodb_table.properties.arn]
+      resources = [aws_dynamodb_table.contract-status.arn]
     }
   }
 
@@ -51,7 +51,7 @@ module "lambda_contract_status_changed_event_handler" {
   ]
 
   environment_variables = {
-    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.properties.name
+    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.contract-status.name
     SERVICE_NAMESPACE            = data.aws_ssm_parameter.PropertiesNamespace.value
     LOG_LEVEL                    = "INFO"
     POWERTOOLS_SERVICE_NAME      = data.aws_ssm_parameter.PropertiesNamespace.value
@@ -94,7 +94,7 @@ module "lambda_properties_approval_sync" {
         "dynamodb:Scan",
         "dynamodb:PartiQLSelect",
       ]
-      resources = [aws_dynamodb_table.properties.arn]
+      resources = [aws_dynamodb_table.contract-status.arn]
     },
     DynamoDBStreamsRead = {
       effect = "Allow"
@@ -104,7 +104,7 @@ module "lambda_properties_approval_sync" {
         "dynamodb:GetShardIterator",
         "dynamodb:ListStreams",
       ]
-      resources = [aws_dynamodb_table.properties.stream_arn]
+      resources = [aws_dynamodb_table.contract-status.stream_arn]
     }
     StateMachineTaskSuccess = {
       effect = "Allow"
@@ -117,7 +117,7 @@ module "lambda_properties_approval_sync" {
 
   event_source_mapping = {
     dynamodb = {
-      event_source_arn       = aws_dynamodb_table.properties.stream_arn
+      event_source_arn       = aws_dynamodb_table.contract-status.stream_arn
       starting_position      = "LATEST"
       batch_size             = 100
       maximum_retry_attempts = 3
@@ -136,7 +136,7 @@ module "lambda_properties_approval_sync" {
   ]
 
   environment_variables = {
-    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.properties.name
+    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.contract-status.name
     SERVICE_NAMESPACE            = data.aws_ssm_parameter.PropertiesNamespace.value
     LOG_LEVEL                    = "INFO"
     POWERTOOLS_SERVICE_NAME      = data.aws_ssm_parameter.PropertiesNamespace.value
@@ -182,7 +182,7 @@ module "lambda_properties_contract_exist_check" {
         "dynamodb:Scan",
         "dynamodb:DescribeTable"
       ]
-      resources = [aws_dynamodb_table.properties.arn]
+      resources = [aws_dynamodb_table.contract-status.arn]
     }
   }
 
@@ -191,7 +191,7 @@ module "lambda_properties_contract_exist_check" {
   ]
 
   environment_variables = {
-    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.properties.name
+    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.contract-status.name
     SERVICE_NAMESPACE            = data.aws_ssm_parameter.PropertiesNamespace.value
     LOG_LEVEL                    = "INFO"
     POWERTOOLS_SERVICE_NAME      = data.aws_ssm_parameter.PropertiesNamespace.value
@@ -234,7 +234,7 @@ module "lambda_properties_contract_integrity_validator" {
         "dynamodb:Scan",
         "dynamodb:DescribeTable"
       ]
-      resources = [aws_dynamodb_table.properties.arn]
+      resources = [aws_dynamodb_table.contract-status.arn]
     }
   }
 
@@ -243,7 +243,7 @@ module "lambda_properties_contract_integrity_validator" {
   ]
 
   environment_variables = {
-    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.properties.name
+    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.contract-status.name
     SERVICE_NAMESPACE            = data.aws_ssm_parameter.PropertiesNamespace.value
     LOG_LEVEL                    = "INFO"
     POWERTOOLS_SERVICE_NAME      = data.aws_ssm_parameter.PropertiesNamespace.value
@@ -289,7 +289,7 @@ module "lambda_properties_wait_for_contract_approval" {
         "dynamodb:Scan",
         "dynamodb:DescribeTable"
       ]
-      resources = [aws_dynamodb_table.properties.arn]
+      resources = [aws_dynamodb_table.contract-status.arn]
     }
   }
 
@@ -298,7 +298,7 @@ module "lambda_properties_wait_for_contract_approval" {
   ]
 
   environment_variables = {
-    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.properties.name
+    CONTRACT_STATUS_TABLE        = aws_dynamodb_table.contract-status.name
     SERVICE_NAMESPACE            = data.aws_ssm_parameter.PropertiesNamespace.value
     LOG_LEVEL                    = "INFO"
     POWERTOOLS_SERVICE_NAME      = data.aws_ssm_parameter.PropertiesNamespace.value

@@ -216,7 +216,7 @@ EOF
     }
 
     dynamodb = {
-      dynamodb = [aws_dynamodb_table.properties.arn]
+      dynamodb = [aws_dynamodb_table.contract-status.arn]
     }
 
     lambda = {
