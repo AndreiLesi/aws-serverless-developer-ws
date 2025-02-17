@@ -19,3 +19,14 @@ module "unicorn_properties" {
     module.unicorn_contracts
   ]
 }
+
+module "unicorn_web" {
+  source  = "./unicorn-web/"
+  project = local.project
+
+  # depends_on = [ 
+  #   module.shared_infra,
+  #   module.unicorn_contracts,
+  #   module.unicorn_properties
+  # ]
+}
