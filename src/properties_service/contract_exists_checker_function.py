@@ -46,7 +46,7 @@ def lambda_handler(event, context):
     detail: dict = event['Input']
 
     try:
-        return get_contract_status(detail["property_id"])
+        return get_contract_status(detail["property_id"], context)
 
     except ContractStatusNotFoundException:
         logger.error("Property %s does not exist. Aborting approval process.", detail["property_id"])
@@ -54,7 +54,7 @@ def lambda_handler(event, context):
 
 @tracer.capture_method
 @logger.inject_lambda_context(log_event=True)
-def get_contract_status(property_id: str) -> dict:
+def get_contract_status(property_id: str, context) -> dict:
     """Returns contract status for a specified property
 
     Parameters

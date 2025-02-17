@@ -251,33 +251,33 @@ EOF
       resources = [module.eventbridge_properties_bus.eventbridge_bus_arn]
     },
     comprehend = {
-        effect = "Allow",
-        actions = [
-          "comprehend:BatchDetectKeyPhrases",
-          "comprehend:DetectDominantLanguage",
-          "comprehend:DetectEntities",
-          "comprehend:BatchDetectEntities",
-          "comprehend:DetectKeyPhrases",
-          "comprehend:DetectSentiment",
-          "comprehend:BatchDetectDominantLanguage",
-          "comprehend:BatchDetectSentiment"
-        ],
-        resources = ["*"]
+      effect = "Allow",
+      actions = [
+        "comprehend:BatchDetectKeyPhrases",
+        "comprehend:DetectDominantLanguage",
+        "comprehend:DetectEntities",
+        "comprehend:BatchDetectEntities",
+        "comprehend:DetectKeyPhrases",
+        "comprehend:DetectSentiment",
+        "comprehend:BatchDetectDominantLanguage",
+        "comprehend:BatchDetectSentiment"
+      ],
+      resources = ["*"]
     },
     recognition = {
-        effect = "Allow",
-        actions = [
-            "rekognition:DetectFaces",
-            "rekognition:DetectLabels",
-            "rekognition:DetectText",
-            "rekognition:DetectModerationLabels"
-        ],
-        resources = ["*"]
+      effect = "Allow",
+      actions = [
+        "rekognition:DetectFaces",
+        "rekognition:DetectLabels",
+        "rekognition:DetectText",
+        "rekognition:DetectModerationLabels"
+      ],
+      resources = ["*"]
     },
     cloudwatch_metrics = {
-        effect = "Allow",
-        actions = ["cloudwatch:PutMetricData"],
-        resources = ["*"]
+      effect    = "Allow",
+      actions   = ["cloudwatch:PutMetricData"],
+      resources = ["*"]
     },
   }
 }

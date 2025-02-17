@@ -68,7 +68,6 @@ def lambda_handler(event, context):
         return result
 
 @tracer.capture_method
-@logger.inject_lambda_context(log_event=True)
 def task_successful(task_token: str, contract_status: dict):
     """Send the token for a specified contract status back to Step Functions to continue workflow execution.
 

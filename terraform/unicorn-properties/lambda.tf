@@ -2,13 +2,13 @@
 module "lambda_contract_status_changed_event_handler" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name                           = "${var.project}-Properties-ContractStatusChanged"
-  source_path                             = [
+  function_name = "${var.project}-Properties-ContractStatusChanged"
+  source_path = [
     "../src/properties_service/contract_status_changed_event_handler.py",
     {
       path = "../src/properties_service/schema",
-      prefix_in_zip = "schema"}
-    ]
+    prefix_in_zip = "schema" }
+  ]
   description                             = "My awesome lambda function"
   handler                                 = "contract_status_changed_event_handler.lambda_handler"
   runtime                                 = "python3.11"
@@ -109,7 +109,7 @@ module "lambda_properties_approval_sync" {
     StateMachineTaskSuccess = {
       effect = "Allow"
       actions = [
-        "states:SendTaskSuccess",     
+        "states:SendTaskSuccess",
       ]
       resources = [module.sfn_properties_approval_state_machine.state_machine_arn]
     }

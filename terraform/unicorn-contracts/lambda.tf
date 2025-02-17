@@ -13,7 +13,9 @@ module "lambda_image_upload" {
   environment_variables = {
     DESTINATION_BUCKET = data.aws_s3_bucket.images.bucket
   }
-
+  layers = [
+    "arn:aws:lambda:eu-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV3-python311-x86_64:7"
+  ]
   attach_policy_statements = true
   policy_statements = {
     S3 = {
