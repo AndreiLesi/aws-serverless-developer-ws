@@ -141,6 +141,10 @@ resource "aws_api_gateway_integration_response" "request_approval_post_200" {
   resource_id = aws_api_gateway_resource.request_approval.id
   http_method = aws_api_gateway_method.request_approval_post.http_method
   status_code = "200"
+  depends_on = [ 
+    aws_api_gateway_integration.request_approval_post,
+    aws_api_gateway_method.request_approval_post 
+  ]
   response_templates = {
     "application/json" = "{\"message\":\"OK\"}"
   }
